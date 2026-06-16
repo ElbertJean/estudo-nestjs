@@ -1,0 +1,24 @@
+# ==============================================================================
+# Gitignore Raiz (Monorepo: Backend e Frontend)
+# ==============================================================================
+
+# Pastas de estudo e anotações pessoais
+fases-estudo/
+*.md
+!README.md
+
+# Variáveis de Ambiente Globais
+.env
+.env.*
+
+# Dependências Globais (Caso use Workspaces)
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
