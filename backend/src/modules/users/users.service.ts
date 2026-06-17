@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { RolesGuard } from 'src/common/guard/roles.guard';
+import { UserRole } from './user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -66,5 +68,16 @@ export class UsersService {
         await this.usersRepository.remove(user);
     }
 
+    async updateRole(id: number, role: UserRole): Promise<User> {
+        const user = await this.usersRepository.preload({
+            id: id,
+            role: role,
+        })
 
+        if (!user) {
+            throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
+        }
+
+        return this.usersRepository.save(user);
+    }
 }

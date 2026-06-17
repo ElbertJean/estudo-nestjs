@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
@@ -6,6 +6,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { RolesGuard } from 'src/common/guard/roles.guard';
+import { UserRole } from './user-role.enum';
+import { Roles } from 'src/common/decorator/roles.decotator';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { IsOwnerOrAdminGuard } from 'src/common/guard/is-owner-or-admin.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -21,10 +26,11 @@ export class UsersController {
     }
 
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Lista todos os usuários' })
+    @ApiOperation({ summary: 'Lista todos os usuários (Apenas Admin)' })
     @ApiResponse({ status: 200, description: 'Usuários encontrados com sucesso' })
     @ApiResponse({ status: 404, description: 'Usuários não encontrados' })
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Get()
     findAll(): Promise<User[]> {
         return this.usersService.findAll();
@@ -32,11 +38,11 @@ export class UsersController {
 
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Busca um usuário pelo ID' })
-    @ApiResponse({ status: 200, description: 'Usuário encontrado com sucesso' })
-    @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, IsOwnerOrAdminGuard)
     @Get(':id')
-    findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<User> {
         return this.usersService.findOne(id);
     }
 
@@ -44,17 +50,36 @@ export class UsersController {
     @ApiOperation({ summary: 'Atualiza um usuário pelo ID' })
     @ApiResponse({ status: 200, description: 'Usuário atualizado com sucesso' })
     @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, IsOwnerOrAdminGuard)
     @Patch(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto): Promise<User> {
+    async update(@Req() req, @Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto): Promise<User> {
+        const userLogado = req.user;
+        if (userLogado.role !== UserRole.ADMIN && userLogado.sub !== id) {
+            throw new ForbiddenException('Acesso negado: Você só pode atualizar o seu próprio perfil.');
+        }
         return this.usersService.update(id, updateUserDto);
     }
 
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Deleta um usuário pelo ID' })
+    @ApiOperation({ summary: 'Altera o perfil (role) de um usuário (Apenas Admin)' })
+    @ApiResponse({ status: 200, description: 'Perfil atualizado com sucesso' })
+    @ApiResponse({ status: 403, description: 'Acesso negado' })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
+    @Patch(':id/role')
+    updateRole(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateUserRoleDto: UpdateUserRoleDto
+    ): Promise<User> {
+        return this.usersService.updateRole(id, updateUserRoleDto.role);
+    }
+
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Deleta um usuário pelo ID (Apenas Admin)' })
     @ApiResponse({ status: 200, description: 'Usuário deletado com sucesso' })
     @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMIN)
     @Delete(':id')
     remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
         return this.usersService.remove(id);

@@ -23,7 +23,7 @@ export class AuthService {
         }
 
         // 2. Se a senha está certa, criamos o "Payload" (o recheio do crachá)
-        const payload = { sub: user.id, email: user.email };
+        const payload = { sub: user.id, email: user.email, role: user.role };
 
         // 3. Fabrica o Token e devolve
         return {

@@ -4,6 +4,7 @@ import { Address } from './entities/address.entity';
 import { AddressService } from './address.service';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { IsOwnerOrAdminGuard } from 'src/common/guard/is-owner-or-admin.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiTags('address')
@@ -12,6 +13,7 @@ export class AddressController {
     constructor(private readonly addressService: AddressService) { }
 
     @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, IsOwnerOrAdminGuard)
     @ApiOperation({ summary: 'Cria um endereço para o usuário' })
     @ApiResponse({ status: 201, description: 'Endereço criado com sucesso' })
     @ApiResponse({ status: 400, description: 'Erro ao criar endereço' })
