@@ -17,7 +17,7 @@ export class StoresController {
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Cria uma nova loja para o usuário logado' })
     @ApiResponse({ status: 201, description: 'Loja criada com sucesso' })
-    @UseGuards(JwtAuthGuard, IsOwnerOrAdminGuard)
+    @UseGuards(JwtAuthGuard)
     @Post()
     create(@Body() createStoreDto: CreateStoreDto, @Req() req): Promise<any> {
         const userId = req.user.sub; // Extraído do JWT

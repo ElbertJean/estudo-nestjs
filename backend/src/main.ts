@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { TypeOrmExceptionFilter } from './common/filters/typeorm-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -19,6 +19,8 @@ async function bootstrap() {
       transform: true,            // Transforma os payloads em instâncias do DTO correspondente
     }),
   );
+
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const config = new DocumentBuilder()
     .setTitle('API EVinil')

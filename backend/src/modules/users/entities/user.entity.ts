@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserRole } from "../enums/user-role.enum";
 import { Store } from "src/modules/stores/entities/store.entity";
+import { Exclude } from "class-transformer";
 
 @Entity('users')
 export class User {
@@ -13,8 +14,9 @@ export class User {
     @Column({ type: 'varchar', length: 150, unique: true })
     email: string;
 
+    @Exclude()
     @Column({ type: 'varchar' })
-    password: string
+    password?: string
 
     @Column({ type: 'varchar', default: UserRole.FREE })
     role: UserRole;
