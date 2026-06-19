@@ -32,7 +32,7 @@ export class SalesController {
     @ApiResponse({ status: 201, description: 'Venda registrada com sucesso' })
     @ApiResponse({ status: 400, description: 'Prejuízo na venda ou dados inválidos' })
     @Post()
-    @UseGuards(JwtAuthGuard, IsOwnerOrAdminGuard)
+    @UseGuards(JwtAuthGuard)
     async create(@Body() createSaleDto: CreateSaleDto, @Req() req) {
         const storeId = await this.getUserStoreId(req.user.sub);
         return this.salesService.create(createSaleDto, storeId);
