@@ -7,7 +7,7 @@ import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from 'src/common/guard/roles.guard';
-import { UserRole } from './user-role.enum';
+import { UserRole } from './enums/user-role.enum';
 import { Roles } from 'src/common/decorator/roles.decotator';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { IsOwnerOrAdminGuard } from 'src/common/guard/is-owner-or-admin.guard';

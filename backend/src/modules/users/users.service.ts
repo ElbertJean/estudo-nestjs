@@ -1,12 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { RolesGuard } from 'src/common/guard/roles.guard';
-import { UserRole } from './user-role.enum';
+import { UserRole } from './enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +15,11 @@ export class UsersService {
     ) { }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
+        const user = await this.usersRepository.findOne({ where: { email: createUserDto.email } });
+        if (user) {
+            throw new ConflictException('E-mail já cadastrado!');
+        }
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
         const userToSave = { ...createUserDto, password: hashedPassword };
@@ -23,31 +27,28 @@ export class UsersService {
     }
 
     async findAll(): Promise<User[]> {
-        return this.usersRepository.find({
-            relations: { address: true }
-        });
+        return this.usersRepository.find();
     }
 
     async findOne(id: number): Promise<User> {
-        const user = await this.usersRepository.findOne({ relations: { address: true }, where: { id } });
+        const user = await this.usersRepository.findOne({ relations: { store: true }, where: { id } });
 
         if (!user) {
-            throw new NotFoundException(`Usuário com ID ${id} não encontrado`); // Erro HTTP 404
+            throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
         }
 
         return user;
     }
 
     async findByEmail(email: string): Promise<User> {
-        const user = await this.usersRepository.findOne({ relations: { address: true }, where: { email } });
+        const user = await this.usersRepository.findOne({ relations: { store: true }, where: { email } });
         if (!user) {
-            throw new NotFoundException(`Usuário com email ${email} não encontrado`); // Erro HTTP 404
+            throw new NotFoundException(`Usuário com email ${email} não encontrado`);
         }
         return user;
     }
 
     async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-        // 1. Preload verifica se o ID existe e mescla as alterações na entidade
         const user = await this.usersRepository.preload({
             id: id,
             ...updateUserDto,
@@ -57,7 +58,7 @@ export class UsersService {
             throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
         }
 
-        return this.usersRepository.save(user); // Salva as alterações
+        return this.usersRepository.save(user);
     }
 
     async remove(id: number): Promise<void> {

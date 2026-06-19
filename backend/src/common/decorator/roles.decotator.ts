@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { UserRole } from 'src/modules/users/user-role.enum';
+import { UserRole } from 'src/modules/users/enums/user-role.enum';
 
 // Chave utilizada para salvar os metadados
 export const ROLES_KEY = 'roles';

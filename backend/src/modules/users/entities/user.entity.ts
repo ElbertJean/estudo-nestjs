@@ -1,6 +1,6 @@
-import { Address } from "src/modules/address/entities/address.entity";
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UserRole } from "../user-role.enum";
+import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { UserRole } from "../enums/user-role.enum";
+import { Store } from "src/modules/stores/entities/store.entity";
 
 @Entity('users')
 export class User {
@@ -16,12 +16,12 @@ export class User {
     @Column({ type: 'varchar' })
     password: string
 
-    @Column({ type: 'int' })
-    age: number;
-
     @Column({ type: 'varchar', default: UserRole.FREE })
     role: UserRole;
 
-    @OneToOne(() => Address, (address) => address.user, { cascade: true })
-    address: Address;
+    // Quando utilizamos ManyToOne, ele cria automaticamente a coluna na tabela users
+    // que fará a ligação com a tabela de lojas. Chama-se storeId
+    // Muitos usuários podem pertencer a uma loja (ManyToOne)
+    @ManyToOne(() => Store, (store) => store.users)
+    store: Store;
 }

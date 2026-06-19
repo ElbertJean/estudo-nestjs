@@ -17,9 +17,4 @@ export class CreateUserDto {
     @IsNotEmpty({ message: 'A senha é obrigatória' })
     @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres' })
     password: string;
-
-    @ApiProperty({ description: 'Idade do usuário', example: 27 })
-    @IsInt({ message: 'A idade deve ser um número inteiro' })
-    @Min(1, { message: 'A idade deve ser maior ou igual a 1' })
-    age: number;
 }
